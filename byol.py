@@ -37,10 +37,18 @@ class BYOL(nn.Module):
         feature_dim=2048,
         projection_dim=256,
         projection_hidden_dim=4096,
+        augment_func1=None,
+        augment_func2=None,
         tau_base=0.996,
         total_training_steps=None
     ):
         super().__init__()
+
+        if augment_func1 is None:
+            raise ValueError('Must assign `augment_func1`')
+
+        if augment_func2 is None:
+            raise ValueError('Must assign `augment_func2`')
 
         if total_training_steps is None:
             raise ValueError('Must assign `total_training_steps`')
@@ -48,6 +56,8 @@ class BYOL(nn.Module):
         self.feature_dim = feature_dim
         self.projection_dim = projection_dim
         self.projection_hidden_dim = projection_hidden_dim
+        self.augment_func1 = augment_func1
+        self.augment_func2 = augment_func2
         self.tau_base = tau_base
         self.total_training_steps = total_training_steps
 
@@ -60,17 +70,17 @@ class BYOL(nn.Module):
 
         self.loss_fn = BYOLLoss()
 
-    def compute_loss(self, img_1, img_2):
-        online_repr_1 = self.online_encoder(img_1)
-        online_repr_2 = self.online_encoder(img_2)
+    def _compute_loss(self, x1, x2):
+        online_repr_1 = self.online_encoder(x1)
+        online_repr_2 = self.online_encoder(x2)
         online_proj_1 = self.online_projector(online_repr_1)
         online_proj_2 = self.online_projector(online_repr_2)
         online_pred_1 = self.online_predictor(online_proj_1)
         online_pred_2 = self.online_predictor(online_proj_2)
 
         with torch.no_grad():
-            target_repr_1 = self.target_encoder(img_1)
-            target_repr_2 = self.target_encoder(img_2)
+            target_repr_1 = self.target_encoder(x1)
+            target_repr_2 = self.target_encoder(x2)
             target_proj_1 = self.target_projector(target_repr_1)
             target_proj_2 = self.target_projector(target_repr_2)
 
@@ -81,6 +91,14 @@ class BYOL(nn.Module):
         loss_2 = self.loss_fn(online_pred_2, target_proj_1)
         loss = (loss_1 + loss_2).mean()
         
+        return loss
+
+    def forward(self, x):
+        x1 = self.augment_func1(x)
+        x2 = self.augment_func2(x)
+
+        loss = self._compute_loss(x1, x2)
+
         return loss
 
     def _compute_tau(self, current_training_steps):
