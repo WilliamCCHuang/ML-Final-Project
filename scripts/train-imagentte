@@ -3,4 +3,6 @@ python train.py \
     --img-size 128 \
     --training-scheme byol \
     --num-layers 18 \
-    --epochs 50
+    --epochs 50 \
+    --batch-size 256 \
+    --gpu-idx 0

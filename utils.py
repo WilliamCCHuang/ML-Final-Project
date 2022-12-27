@@ -20,9 +20,9 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = True
 
 
-def get_feature_dim(encoder, img_size):
+def get_feature_dim(encoder, img_size, device):
     with torch.no_grad():
-        x = torch.randn(1, 3, img_size, img_size)
+        x = torch.randn(1, 3, img_size, img_size).to(device)
         repr = encoder(x).view(1, -1)
         feature_dim = repr.shape[-1]
 

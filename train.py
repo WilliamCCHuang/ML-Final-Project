@@ -2,6 +2,7 @@ import argparse
 from tqdm import tqdm
 from pathlib import Path
 
+import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -47,9 +48,11 @@ def main():
     opt = parse_opt()
     check_opt(opt)
     seed_everything(opt.seed)
+    
+    device = torch.device(f'cuda:{opt.gpu_idx}' if torch.cuda.is_available() else 'cpu')
 
-    encoder = get_resnet(opt)
-    opt.feature_dim = get_feature_dim(encoder, opt.img_size)
+    encoder = get_resnet(opt).to(device)
+    opt.feature_dim = get_feature_dim(encoder, opt.img_size, device)
 
     scheme_func = None
     if opt.training_scheme == 'supervised':
@@ -60,18 +63,18 @@ def main():
         scheme_func = train_byol
 
     opt.augment_funcs = get_transform(opt)
-    scheme_func(encoder, opt)
+    scheme_func(encoder, opt, device)
 
 
-def train_supervised(encoder, opt):
+def train_supervised(encoder, opt, device):
     raise NotImplementedError  # TODO:
 
 
-def train_simclr(loader, encoder, opt):
+def train_simclr(loader, encoder, opt, device):
     raise NotImplementedError  # TODO:
 
 
-def train_byol(encoder, opt):
+def train_byol(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
     transform = get_transform(opt)
     total_training_steps = compute_total_training_steps(train_loader, opt)
@@ -87,18 +90,18 @@ def train_byol(encoder, opt):
 
     optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
 
-    for epoch in tqdm(range(opt.epochs), desc='Epochs', leave=False):
+    for epoch in tqdm(range(opt.epochs), desc='Epochs'):
         t = tqdm(train_loader)
         for i, (img, _) in enumerate(t):
             current_training_steps = epoch * len(train_loader) + i
 
-            loss = learner(img)
+            loss = learner(img.to(device))
             optimizer.zero_grad()
             loss.backward()
             learner.update_target_network(current_training_steps=current_training_steps)
 
-            t.set_description(f'[Epoch {epoch}| Batch {i}]')
-            t.set_postfix(f'byol loss = {loss.item():.4f}')
+            t.set_description(f'[Epoch {epoch} | Batch {i}]')
+            t.set_postfix({'byol loss': f'{loss.item():.4f}'})
 
 
 def get_loaders(opt):
