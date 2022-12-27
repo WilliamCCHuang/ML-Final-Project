@@ -3,6 +3,7 @@ import random
 import numpy as np
 
 import torch
+from torchvision.transforms import transforms
 
 
 def check_opt(opt):
@@ -28,21 +29,30 @@ def get_feature_dim(encoder, img_size):
     return feature_dim
 
 
-def get_augment_funcs(opt):
-    if opt.training_scheme == 'supervised':
-        augment_func = None
+def get_transform(opt):
+    color_jitter = transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
 
-        return augment_func, None
+    if opt.training_scheme == 'supervised':
+        transform = None
     
     if opt.training_scheme == 'simclr':
-        augment_func1 = None
-        augment_func2 = None
-        raise NotImplementedError
+        transform = None
     
     if opt.training_scheme == 'byol':
-        augment_func1 = None
-        augment_func2 = None
-        raise NotImplementedError
+        transform = [
+            transforms.RandomResizedCrop(opt.img_size),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomApply([color_jitter], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.RandomApply([transforms.GaussianBlur(kernel_size=5)], p=0.5),
+            # transforms.RandomApply([Solarize()], p=solarize_prob),
+            # transforms.ToTensor(),
+            normalize
+        ]
+    
+    return transforms.Compose(transform)
 
 
 def compute_total_training_steps(loader, opt):

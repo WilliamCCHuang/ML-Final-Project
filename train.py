@@ -1,24 +1,26 @@
 import argparse
 from tqdm import tqdm
+from pathlib import Path
 
 import torch.optim as optim
-from torch.utils.data import Dataloader
+from torch.utils.data import DataLoader
 
 from byol import BYOL
-from datasets import ImageNetDataset
+from datasets import ImagenetteDataset
 from resnet import get_resnet
-from utils import seed_everything, get_feature_dim, get_augment_funcs, compute_total_training_steps
+from utils import seed_everything, get_feature_dim, get_transform, compute_total_training_steps
 
 
 def parse_opt():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--img-dir', type=str)
     parser.add_argument('--img-size', type=int, default=224)
     parser.add_argument('--training-scheme', type=str, default='byol')
     parser.add_argument('--num-layers', type=int, default=50)
     parser.add_argument('--wide-scale', type=int, default=1)
     parser.add_argument('--epochs', type=int, default=1000)
-    parser.add_argument('--batch-size', type=int, default=256) # 4096 in paper
+    parser.add_argument('--batch-size', type=int, default=256)  # 4096 in paper
     parser.add_argument('--lr-base', type=float, default=0.2)
     parser.add_argument('--tau-base', type=float, default=0.996)
 
@@ -35,9 +37,8 @@ def check_opt(opt):
     opt.num_layers in [50, 101, 152, 200]
     opt.wide_scale in [1, 2, 3, 4]
 
-    # TODO: for other datasets
-    if opt.dataset == 'imagenet':
-        opt.num_classes = 1000
+    if 'imagenette' in opt.img_dir:
+        opt.num_classes = 10
 
     opt.lr = opt.lr_base * opt.batch_size / 256
 
@@ -50,7 +51,6 @@ def main():
     encoder = get_resnet(opt)
     opt.feature_dim = get_feature_dim(encoder, opt.img_size)
 
-
     scheme_func = None
     if opt.training_scheme == 'supervised':
         scheme_func = train_supervised
@@ -59,7 +59,7 @@ def main():
     else:
         scheme_func = train_byol
 
-    opt.augment_funcs = get_augment_funcs(opt)
+    opt.augment_funcs = get_transform(opt)
     scheme_func(encoder, opt)
 
 
@@ -72,15 +72,15 @@ def train_simclr(loader, encoder, opt):
 
 
 def train_byol(encoder, opt):
-    loader = get_loaders(opt)
-    augment_func1, augment_func2 = get_augment_funcs(opt)
-    total_training_steps = compute_total_training_steps(loader, opt)
+    train_loader, val_loader = get_loaders(opt)
+    transform = get_transform(opt)
+    total_training_steps = compute_total_training_steps(train_loader, opt)
 
     learner = BYOL(
         encoder=encoder,
         feature_dim=opt.feature_dim,
-        augment_func1=augment_func1,
-        augment_func2=augment_func2,
+        augment_func1=transform,
+        augment_func2=transform,
         tau_base=opt.tau_base,
         total_training_steps=total_training_steps,
     )
@@ -88,17 +88,27 @@ def train_byol(encoder, opt):
     optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
 
     for epoch in tqdm(range(opt.epochs), desc='Epochs', leave=False):
-        for i, (img, _) in enumerate(tqdm(loader)):
+        t = tqdm(train_loader)
+        for i, (img, _) in enumerate(t):
+            current_training_steps = epoch * len(train_loader) + i
+
             loss = learner(img)
             optimizer.zero_grad()
             loss.backward()
-            learner.update_target_network(current_training_steps=epoch * len(loader) + i)
+            learner.update_target_network(current_training_steps=current_training_steps)
+
+            t.set_description(f'[Epoch {epoch}| Batch {i}]')
+            t.set_postfix(f'byol loss = {loss.item():.4f}')
 
 
 def get_loaders(opt):
-    dataset = ImageNetDataset()
-    # TODO: split train, val
+    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size)
+    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size)
+    
+    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)
 
+    return train_loader, val_loader
     
 
 if __name__ == '__main__':

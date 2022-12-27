@@ -1,0 +1,6 @@
+python train.py \
+    --img-dir data/imagenette2-160 \
+    --img-size 128 \
+    --training-scheme byol \
+    --num-layers 18 \
+    --epochs 50

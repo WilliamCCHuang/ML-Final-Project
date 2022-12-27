@@ -208,7 +208,9 @@ class ResNet(nn.Module):
 
 
 def get_resnet(opt):
-    if opt.num_layers == 50:
+    if opt.num_layers == 18:
+        layers = [2, 2, 2, 2]
+    elif opt.num_layers == 50:
         layers = [3, 4, 6, 3]
     elif opt.num_layers == 101:
         layers = [3, 4, 23, 3]

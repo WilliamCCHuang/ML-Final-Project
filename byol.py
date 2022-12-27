@@ -4,7 +4,7 @@ import math
 import torch
 import torch.nn as nn
 
-from .losses import BYOLLoss
+from losses import BYOLLoss
 
 
 class MLP(nn.Module):
@@ -71,18 +71,18 @@ class BYOL(nn.Module):
         self.loss_fn = BYOLLoss()
 
     def _compute_loss(self, x1, x2):
-        online_repr_1 = self.online_encoder(x1)
-        online_repr_2 = self.online_encoder(x2)
-        online_proj_1 = self.online_projector(online_repr_1)
-        online_proj_2 = self.online_projector(online_repr_2)
+        online_repr_1 = self.online_encoder(x1)  # (bz, hidden_dim, 1, 1)
+        online_repr_2 = self.online_encoder(x2)  # (bz, hidden_dim, 1, 1)
+        online_proj_1 = self.online_projector(online_repr_1.squeeze())
+        online_proj_2 = self.online_projector(online_repr_2.squeeze())
         online_pred_1 = self.online_predictor(online_proj_1)
         online_pred_2 = self.online_predictor(online_proj_2)
 
         with torch.no_grad():
-            target_repr_1 = self.target_encoder(x1)
-            target_repr_2 = self.target_encoder(x2)
-            target_proj_1 = self.target_projector(target_repr_1)
-            target_proj_2 = self.target_projector(target_repr_2)
+            target_repr_1 = self.target_encoder(x1)  # (bz, hidden_dim, 1, 1)
+            target_repr_2 = self.target_encoder(x2)  # (bz, hidden_dim, 1, 1)
+            target_proj_1 = self.target_projector(target_repr_1.squeeze())
+            target_proj_2 = self.target_projector(target_repr_2.squeeze())
 
             target_proj_1.detach_()
             target_proj_2.detach_()
