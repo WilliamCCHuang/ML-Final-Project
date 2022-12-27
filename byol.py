@@ -70,6 +70,11 @@ class BYOL(nn.Module):
         self.target_encoder = copy.deepcopy(self.online_encoder).to(self.device)
         self.target_projector = copy.deepcopy(self.online_projector).to(self.device)
 
+        for param in self.target_encoder.parameters():
+            param.requires_grad = False
+        for param in self.target_projector.parameters():
+            param.requires_grad = False
+
         self.loss_fn = BYOLLoss()
 
     def _compute_loss(self, x1, x2):
@@ -112,6 +117,7 @@ class BYOL(nn.Module):
 
     def update_target_network(self, current_training_steps):
         tau = self._compute_tau(current_training_steps)
+        print(tau)
 
         for online_param, target_param in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
             new_weight = online_param.data
