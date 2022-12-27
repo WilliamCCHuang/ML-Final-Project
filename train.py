@@ -91,6 +91,8 @@ def train_byol(encoder, opt, device):
 
     optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
 
+    breakpoint()
+
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
         t_batch = tqdm(train_loader)
