@@ -117,7 +117,6 @@ class BYOL(nn.Module):
 
     def update_target_network(self, current_training_steps):
         tau = self._compute_tau(current_training_steps)
-        print(tau)
 
         for online_param, target_param in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
             new_weight = online_param.data
