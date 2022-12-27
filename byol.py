@@ -77,6 +77,13 @@ class BYOL(nn.Module):
 
         self.loss_fn = BYOLLoss()
 
+    def trainable_parameters(self):
+        params = list(self.online_encoder.parameters())
+        params += list(self.online_projector.parameters())
+        params += list(self.online_predictor.parameters())
+        
+        return params
+
     def _compute_loss(self, x1, x2):
         online_repr_1 = self.online_encoder(x1)  # (bz, hidden_dim, 1, 1)
         online_repr_2 = self.online_encoder(x2)  # (bz, hidden_dim, 1, 1)

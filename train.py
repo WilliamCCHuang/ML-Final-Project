@@ -89,9 +89,7 @@ def train_byol(encoder, opt, device):
         total_training_steps=total_training_steps,
     )
 
-    optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
-
-    breakpoint()
+    optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr)
 
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
