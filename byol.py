@@ -69,6 +69,8 @@ class BYOL(nn.Module):
         self.target_projector = copy.deepcopy(self.online_projector)
 
         self.loss_fn = BYOLLoss()
+        
+        self.device = next(encoder.parameters()).device
 
     def _compute_loss(self, x1, x2):
         online_repr_1 = self.online_encoder(x1)  # (bz, hidden_dim, 1, 1)
@@ -96,6 +98,9 @@ class BYOL(nn.Module):
     def forward(self, x):
         x1 = self.augment_func1(x)
         x2 = self.augment_func2(x)
+
+        x1 = x1.to(self.device)
+        x2 = x2.to(self.device)
 
         loss = self._compute_loss(x1, x2)
 
