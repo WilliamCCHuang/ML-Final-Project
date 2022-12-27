@@ -53,6 +53,8 @@ class BYOL(nn.Module):
         if total_training_steps is None:
             raise ValueError('Must assign `total_training_steps`')
 
+        self.device = next(encoder.parameters()).device
+
         self.feature_dim = feature_dim
         self.projection_dim = projection_dim
         self.projection_hidden_dim = projection_hidden_dim
@@ -62,15 +64,13 @@ class BYOL(nn.Module):
         self.total_training_steps = total_training_steps
 
         self.online_encoder = encoder
-        self.online_projector = MLP(feature_dim, projection_hidden_dim, projection_dim)
-        self.online_predictor = MLP(projection_dim, projection_hidden_dim, projection_dim)
+        self.online_projector = MLP(feature_dim, projection_hidden_dim, projection_dim).to(self.device)
+        self.online_predictor = MLP(projection_dim, projection_hidden_dim, projection_dim).to(self.device)
 
-        self.target_encoder = copy.deepcopy(self.online_encoder)
-        self.target_projector = copy.deepcopy(self.online_projector)
+        self.target_encoder = copy.deepcopy(self.online_encoder).to(self.device)
+        self.target_projector = copy.deepcopy(self.online_projector).to(self.device)
 
         self.loss_fn = BYOLLoss()
-        
-        self.device = next(encoder.parameters()).device
 
     def _compute_loss(self, x1, x2):
         online_repr_1 = self.online_encoder(x1)  # (bz, hidden_dim, 1, 1)
