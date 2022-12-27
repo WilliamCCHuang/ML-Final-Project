@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 from tqdm import tqdm
 from pathlib import Path
 
@@ -90,9 +91,10 @@ def train_byol(encoder, opt, device):
 
     optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
 
-    for epoch in tqdm(range(opt.epochs), desc='Epochs'):
-        t = tqdm(train_loader)
-        for i, (img, _) in enumerate(t):
+    t_epoch = tqdm(range(opt.epochs), desc='Epochs')
+    for epoch in t_epoch:
+        t_batch = tqdm(train_loader)
+        for i, (img, _) in enumerate(t_batch):
             current_training_steps = epoch * len(train_loader) + i
 
             loss = learner(img.to(device))
@@ -100,7 +102,16 @@ def train_byol(encoder, opt, device):
             loss.backward()
             learner.update_target_network(current_training_steps=current_training_steps)
 
-            t.set_postfix({'byol loss': f'{loss.item():.4f}'})
+            t_batch.set_postfix({'byol loss': f'{loss.item():.4f}'})
+
+        with torch.no_grad():
+            losses = []
+            for img, _ in enumerate(val_loader):
+                loss = learner(img.to(device))
+                losses.append(loss.item())
+
+        loss = np.mean(losses)
+        t_epoch.set_postfix({'byol loss': f'{loss:.4f}'})
 
 
 def get_loaders(opt):
