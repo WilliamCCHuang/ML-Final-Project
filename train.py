@@ -100,7 +100,6 @@ def train_byol(encoder, opt, device):
             loss.backward()
             learner.update_target_network(current_training_steps=current_training_steps)
 
-            t.set_description(f'[Epoch {epoch} | Batch {i}]')
             t.set_postfix({'byol loss': f'{loss.item():.4f}'})
 
 
