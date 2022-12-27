@@ -106,7 +106,7 @@ def train_byol(encoder, opt, device):
 
         with torch.no_grad():
             losses = []
-            for img, _ in enumerate(val_loader):
+            for img, _ in val_loader:
                 loss = learner(img.to(device))
                 losses.append(loss.item())
 
