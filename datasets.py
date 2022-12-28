@@ -45,12 +45,12 @@ class ImagenetteDataset(Dataset):
     def __getitem__(self, idx):
         img_path, class_idx = self.img_infos[idx]
         img = Image.open(str(img_path)).resize((160, 160))
-        img = PILToTensor()(img).float()  # (3, 160, 160)
-
-        if self.transform is not None:
-            img = self.transform(img)
+        img = PILToTensor()(img).float()  # (1 or 3, 160, 160)
 
         if img.shape[0] == 1:
             img = torch.cat((img, img, img), dim=0)
+
+        if self.transform is not None:
+            img = self.transform(img)
 
         return img, class_idx
