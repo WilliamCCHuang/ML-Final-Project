@@ -132,7 +132,7 @@ def train_byol(encoder, opt, device):
             optimizer.step()
             learner.update_target_network(current_training_steps=current_training_steps)
 
-            t_batch.set_postfix({'byol train loss': f'{loss.item():.4f}'})
+            t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
         with torch.no_grad():
             val_loss = []
@@ -141,7 +141,7 @@ def train_byol(encoder, opt, device):
                 val_loss.append(loss.item())
 
         val_loss = np.mean(val_loss)
-        t_epoch.set_postfix({'byol val loss': f'{val_loss:.4f}'})
+        t_epoch.set_postfix({'val loss': f'{val_loss:.4f}'})
 
         if val_loss < best_loss:
             learner.save(dir_path=opt.output_dir)
