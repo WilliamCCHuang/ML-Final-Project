@@ -34,23 +34,16 @@ def get_transform(opt):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
-    if opt.training_scheme == 'supervised':
-        transform = None
-    
-    if opt.training_scheme == 'simclr':
-        transform = None
-    
-    if opt.training_scheme == 'byol':
-        transform = [
-            transforms.RandomResizedCrop(opt.img_size),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomApply([color_jitter], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.RandomApply([transforms.GaussianBlur(kernel_size=5)], p=0.5),
-            # transforms.RandomApply([Solarize()], p=solarize_prob),
-            # transforms.ToTensor(),
-            normalize
-        ]
+    transform = [
+        transforms.RandomResizedCrop(opt.img_size),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomApply([color_jitter], p=0.8),
+        transforms.RandomGrayscale(p=0.2),
+        transforms.RandomApply([transforms.GaussianBlur(kernel_size=5)], p=0.5),
+        # transforms.RandomApply([Solarize()], p=solarize_prob),
+        # transforms.ToTensor(),
+        normalize
+    ]
     
     return transforms.Compose(transform)
 
