@@ -1,3 +1,4 @@
+import copy
 import yaml
 import argparse
 import numpy as np
@@ -62,7 +63,7 @@ def check_opt(opt):
 def save_opt(opt):
     opt_path = str(opt.output_dir / 'config.yaml')
 
-    cfg = vars(opt)
+    cfg = copy.deepcopy(vars(opt))
     for k, v in cfg.items():
         if isinstance(v, Path):
             cfg[k] = str(v)
