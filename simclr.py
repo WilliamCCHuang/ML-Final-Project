@@ -97,19 +97,17 @@ class SimCLR(nn.Module):
 
     def save(self, dir_path):
         cpu_device = torch.device('cpu')
-        model_path = str(dir_path / 'byol_learner.pt')
+        model_path = str(dir_path / 'simclr_learner.pt')
 
         checkpoint = {
-            'online_encoder': self.online_encoder.to(cpu_device).state_dict(),
-            'online_projector': self.online_projector.to(cpu_device).state_dict(),
-            'online_predictor': self.online_predictor.to(cpu_device).state_dict()
+            'encoder': self.encoder.to(cpu_device).state_dict(),
+            'projector': self.projector.to(cpu_device).state_dict()
         }
 
         torch.save(checkpoint, model_path)
 
-        self.online_encoder.to(self.device)
-        self.online_projector.to(self.device)
-        self.online_predictor.to(self.device)
+        self.encoder.to(self.device)
+        self.projector.to(self.device)
 
     def load(self, model_path):
         if not model_path.exist():
@@ -117,10 +115,8 @@ class SimCLR(nn.Module):
 
         checkpoint = torch.load(str(model_path))
 
-        self.online_encoder.load_state_dict(checkpoint['online_encoder'])
-        self.online_projector.load_state_dict(checkpoint['online_projector'])
-        self.online_predictor.load_state_dict(checkpoint['online_predictor'])
+        self.encoder.load_state_dict(checkpoint['encoder'])
+        self.projector.load_state_dict(checkpoint['projector'])
 
-        self.online_encoder.to(self.device)
-        self.online_projector.to(self.device)
-        self.online_predictor.to(self.device)
+        self.encoder.to(self.device)
+        self.projector.to(self.device)
