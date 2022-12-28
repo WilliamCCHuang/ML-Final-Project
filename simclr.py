@@ -57,6 +57,8 @@ class SimCLR(nn.Module):
         self.projector = MLP(feature_dim, project_dim, project_dim).to(self.device)
 
     def _compute_loss(self, x1, x2):
+        bz = x1.shape[0]
+
         h1 = self.encoder(x1)
         z1 = self.projector(h1.squeeze())  # (bz, project_dim)
         z1 = F.normalize(z1, p=2, dim=1)  # (bz, project_dim)
@@ -66,15 +68,19 @@ class SimCLR(nn.Module):
         z2 = F.normalize(z2, p=2, dim=1)  # (bz, project_dim)
 
         similarity = torch.matmul(z1, z2.T) / self.temperature  # (bz, bz)
-        numerator = torch.diag(similarity)  # (bz,)
-        denominator = torch.logcumsumexp(similarity, dim=0) + torch.logcumsumexp(similarity, dim=1)  # (bz,)
+        exp_similarity = similarity.exp()
+        pos_similarity = torch.diag(similarity)  # (bz,)
+        neg_similarity = exp_similarity.sum(dim=0) + exp_similarity.sum(dim=1) - 2 * pos_similarity.exp()  # (bz,)
 
         # similarity = similarity.exp()
         # exp_pos_similarity = pos_similarity.exp()
         # neg_col_similarity = similarity.sum(dim=0) - exp_pos_similarity
         # neg_row_similarity = similarity.sum(dim=1) - exp_pos_similarity
 
-        loss = - numerator.mean() + denominator.mean()
+        assert len(pos_similarity) == bz
+        assert len(neg_similarity) == bz
+
+        loss = - pos_similarity.mean() + neg_similarity.log().mean()
 
         return loss
 
