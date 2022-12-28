@@ -1,4 +1,4 @@
-import json
+import yaml
 import argparse
 import numpy as np
 from tqdm import tqdm
@@ -60,15 +60,15 @@ def check_opt(opt):
 
 
 def save_opt(opt):
-    opt_path = str(opt.output_dir / 'config.json')
+    opt_path = str(opt.output_dir / 'config.yaml')
 
-    opt_json = vars(opt)
-    for k, v in opt_json.items():
+    cfg = vars(opt)
+    for k, v in cfg.items():
         if isinstance(v, Path):
-            opt_json[k] = str(v)
+            cfg[k] = str(v)
 
     with open(str(opt_path), 'w') as f:
-        f.write(json.dumps(opt_json, indent=4))
+        yaml.dump(cfg, f)
 
 
 def main():
