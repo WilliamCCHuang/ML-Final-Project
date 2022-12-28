@@ -152,6 +152,10 @@ class BYOL(nn.Module):
 
         torch.save(checkpoint, model_path)
 
+        self.online_encoder.to(self.device)
+        self.online_projector.to(self.device)
+        self.online_predictor.to(self.device)
+
     def load(self, model_path):
         if not model_path.exist():
             raise FileNotFoundError()
@@ -161,3 +165,7 @@ class BYOL(nn.Module):
         self.online_encoder.load_state_dict(checkpoint['online_encoder'])
         self.online_projector.load_state_dict(checkpoint['online_projector'])
         self.online_predictor.load_state_dict(checkpoint['online_predictor'])
+
+        self.online_encoder.to(self.device)
+        self.online_projector.to(self.device)
+        self.online_predictor.to(self.device)
