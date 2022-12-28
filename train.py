@@ -64,7 +64,7 @@ def save_opt(opt):
 
     opt_json = vars(opt)
     for k, v in opt_json.items():
-        if not isinstance(v, int, float, str, dict):
+        if not isinstance(v, (int, float, str, dict)):
             opt_json[k] = dict(v)
 
     with open(str(opt_path), 'w') as f:
