@@ -139,3 +139,25 @@ class BYOL(nn.Module):
 
     def get_representation(self, img):
         return self.online_encoder(img)
+
+    def save(self, dir_path):
+        cpu_device = torch.device('cpu')
+        model_path = str(dir_path / 'byol_learner.pt')
+
+        checkpoint = {
+            'online_encoder': self.online_encoder.to(cpu_device).state_dict(),
+            'online_projector': self.online_projector.to(cpu_device).state_dict(),
+            'online_predictor': self.online_predictor.to(cpu_device).state_dict()
+        }
+
+        torch.save(checkpoint, model_path)
+
+    def load(self, model_path):
+        if not model_path.exist():
+            raise FileNotFoundError()
+
+        checkpoint = torch.load(str(model_path))
+
+        self.online_encoder.load_state_dict(checkpoint['online_encoder'])
+        self.online_projector.load_state_dict(checkpoint['online_projector'])
+        self.online_predictor.load_state_dict(checkpoint['online_predictor'])

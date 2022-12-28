@@ -1,7 +1,9 @@
+import json
 import argparse
 import numpy as np
 from tqdm import tqdm
 from pathlib import Path
+from pprint import pprint
 
 import torch
 import torch.optim as optim
@@ -26,6 +28,7 @@ def parse_opt():
     parser.add_argument('--lr-base', type=float, default=0.2)
     parser.add_argument('--tau-base', type=float, default=0.996)
 
+    parser.add_argument('--output-dir', type=str)
     parser.add_argument('--gpu-idx', type=int, default=0)
     parser.add_argument('--seed', type=int, default=42, help='seed')
 
@@ -43,6 +46,24 @@ def check_opt(opt):
         opt.num_classes = 10
 
     opt.lr = opt.lr_base * opt.batch_size / 256
+
+    if opt.output_dir is None:
+        raise RuntimeError('The argument `output-dir` must be assign')
+    opt.output_dir = Path(opt.output_dir)
+    if not opt.output_dir.exists():
+        opt.output_dir.mkdir(parents=True, exist_ok=True)
+
+    print()
+    print('Config:')
+    pprint(opt)
+    print()
+
+
+def save_opt(opt):
+    opt_path = str(opt.output_dir / 'config.json')
+
+    with open(str(opt_path), 'w') as f:
+        json.dump(opt, f)
 
 
 def main():
@@ -91,6 +112,7 @@ def train_byol(encoder, opt, device):
 
     optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr)
 
+    best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
         t_batch = tqdm(train_loader)
@@ -103,16 +125,20 @@ def train_byol(encoder, opt, device):
             optimizer.step()
             learner.update_target_network(current_training_steps=current_training_steps)
 
-            t_batch.set_postfix({'byol loss': f'{loss.item():.4f}'})
+            t_batch.set_postfix({'byol train loss': f'{loss.item():.4f}'})
 
         with torch.no_grad():
-            losses = []
+            val_loss = []
             for img, _ in val_loader:
                 loss = learner(img.to(device))
-                losses.append(loss.item())
+                val_loss.append(loss.item())
 
-        loss = np.mean(losses)
-        t_epoch.set_postfix({'byol loss': f'{loss:.4f}'})
+        val_loss = np.mean(val_loss)
+        t_epoch.set_postfix({'byol val loss': f'{val_loss:.4f}'})
+
+        if val_loss < best_loss:
+            learner.save(dir_path=opt.output_dir)
+            print('save model!')
 
 
 def get_loaders(opt):
