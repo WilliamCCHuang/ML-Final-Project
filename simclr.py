@@ -66,13 +66,17 @@ class SimCLR(nn.Module):
         z2 = F.normalize(z2, p=2, dim=1)  # (bz, project_dim)
 
         similarity = torch.matmul(z1, z2.T) / self.temperature  # (bz, bz)
-        pos_similarity = torch.diag(similarity)
+        numerator = torch.diag(similarity)  # (bz,)
+        denominator = torch.logcumsumexp(dim=0) + torch.logcumsumexp(dim=1)  # (bz,)
 
-        similarity = similarity.exp()
-        neg_col_similarity = similarity.sum(dim=0)
-        neg_row_similarity = similarity.sum(dim=1)
+        # similarity = similarity.exp()
+        # exp_pos_similarity = pos_similarity.exp()
+        # neg_col_similarity = similarity.sum(dim=0) - exp_pos_similarity
+        # neg_row_similarity = similarity.sum(dim=1) - exp_pos_similarity
 
+        loss = - numerator.mean() + denominator.mean()
 
+        return loss
 
     def forward(self, x):
         x1 = self.transform_1(x)
@@ -84,3 +88,39 @@ class SimCLR(nn.Module):
         loss = self._compute_loss(x1, x2)
 
         return loss
+
+    def get_representation(self, x):
+        bz = x.shape[0]
+        h = self.encoder(x)
+
+        return h.view(bz, -1)
+
+    def save(self, dir_path):
+        cpu_device = torch.device('cpu')
+        model_path = str(dir_path / 'byol_learner.pt')
+
+        checkpoint = {
+            'online_encoder': self.online_encoder.to(cpu_device).state_dict(),
+            'online_projector': self.online_projector.to(cpu_device).state_dict(),
+            'online_predictor': self.online_predictor.to(cpu_device).state_dict()
+        }
+
+        torch.save(checkpoint, model_path)
+
+        self.online_encoder.to(self.device)
+        self.online_projector.to(self.device)
+        self.online_predictor.to(self.device)
+
+    def load(self, model_path):
+        if not model_path.exist():
+            raise FileNotFoundError()
+
+        checkpoint = torch.load(str(model_path))
+
+        self.online_encoder.load_state_dict(checkpoint['online_encoder'])
+        self.online_projector.load_state_dict(checkpoint['online_projector'])
+        self.online_predictor.load_state_dict(checkpoint['online_predictor'])
+
+        self.online_encoder.to(self.device)
+        self.online_projector.to(self.device)
+        self.online_predictor.to(self.device)

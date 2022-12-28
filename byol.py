@@ -138,7 +138,10 @@ class BYOL(nn.Module):
             target_param.data = tau * old_weight + (1 - tau) * new_weight
 
     def get_representation(self, x):
-        return self.online_encoder(x)
+        bz = x.shape[0]
+        repr = self.online_encoder(x)
+
+        return repr.view(bz, -1)
 
     def save(self, dir_path):
         cpu_device = torch.device('cpu')

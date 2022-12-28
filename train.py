@@ -30,6 +30,7 @@ def parse_opt():
     parser.add_argument('--batch-size', type=int, default=256)  # 4096 in paper
     parser.add_argument('--lr-base', type=float, default=0.2)
     parser.add_argument('--tau-base', type=float, default=0.996)
+    parser.add_argument('--temperature', type=float, default=0.5)
 
     parser.add_argument('--output-dir', type=str)
     parser.add_argument('--gpu-idx', type=int, default=0)
@@ -159,8 +160,38 @@ def train_simclr(encoder, opt, device):
         encoder=encoder,
         transform_1=transform,
         transform_2=transform,
+        feature_dim=opt.feature_dim,
+        temperature=opt.temperature
     )
 
+    optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
+
+    best_loss = np.inf
+    t_epoch = tqdm(range(opt.epochs), desc='Epochs')
+    for _ in t_epoch:
+        t_batch = tqdm(train_loader, desc='Batches')
+        for img, _ in t_batch:
+            loss = learner(img.to(device))
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
+
+        with torch.no_grad():
+            val_loss = []
+            for img, _ in val_loader:
+                loss = learner(img.to(device))
+                val_loss.append(loss.item())
+
+        val_loss = np.mean(val_loss)
+        t_epoch.set_postfix({'val loss': f'{val_loss:.4f}'})
+
+        if val_loss < best_loss:
+            best_loss = val_loss
+            learner.save(dir_path=opt.output_dir)
+            print(f'save model as val loss = {val_loss:.4f}')
 
 def train_byol(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
