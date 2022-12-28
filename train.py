@@ -109,7 +109,7 @@ def train_supervised(model, opt, device):
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 
-    best_loss = np.inf
+    best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for _ in t_epoch:
         t_batch = tqdm(train_loader)
@@ -117,8 +117,8 @@ def train_supervised(model, opt, device):
             img = img.to(device)
             label = label.to(device)
 
-            y_pred = model(img)
-            loss = loss_fn(y_pred, label)
+            y_prob = model(img)
+            loss = loss_fn(y_prob, label)
 
             optimizer.zero_grad()
             loss.backward()
@@ -127,22 +127,27 @@ def train_supervised(model, opt, device):
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
         with torch.no_grad():
+            val_acc = 0
             val_loss = []
             for img, label in val_loader:
                 img = img.to(device)
                 label = label.to(device)
 
-                y_pred = model(img)
-                loss = loss_fn(y_pred, label)
+                y_prob = model(img)
+                loss = loss_fn(y_prob, label)
                 val_loss.append(loss.item())
 
+                _, y_pred = torch.max(y_prob, dim=1)
+                val_acc += (label == y_pred).sum()
+
         val_loss = np.mean(val_loss)
+        val_acc = val_acc.item() / len(val_loader.dataset)
         t_epoch.set_postfix({'val loss': f'{val_loss:.4f}'})
 
-        if val_loss < best_loss:
-            best_loss = val_loss
-            torch.save(model.state_dict(), str(opt.output_dir))
-            print('save model!')
+        if val_acc > best_acc:
+            best_acc = val_acc
+            torch.save(model.state_dict(), str(opt.output_dir / 'model.pt'))
+            print(f'save model as val acc = {val_acc:.4f}')
 
 
 def train_simclr(loader, encoder, opt, device):
@@ -192,7 +197,7 @@ def train_byol(encoder, opt, device):
         if val_loss < best_loss:
             best_loss = val_loss
             learner.save(dir_path=opt.output_dir)
-            print('save model!')
+            print(f'save model as val loss = {val_loss:.4f}')
 
 
 def get_loaders(opt):
