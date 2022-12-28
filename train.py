@@ -63,7 +63,7 @@ def save_opt(opt):
     opt_path = str(opt.output_dir / 'config.json')
 
     with open(str(opt_path), 'w') as f:
-        f.write(json.dumps(vars(opt)), indent=4)
+        f.write(json.dumps(vars(opt), indent=4))
 
 
 def main():
