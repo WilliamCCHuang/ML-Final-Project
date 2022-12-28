@@ -114,8 +114,12 @@ def train_supervised(model, opt, device):
     for _ in t_epoch:
         t_batch = tqdm(train_loader)
         for img, label in t_batch:
-            y_pred = model(img.to(device))
+            img = img.to(device)
+            label = label.to(device)
+
+            y_pred = model(img)
             loss = loss_fn(y_pred, label)
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -125,7 +129,10 @@ def train_supervised(model, opt, device):
         with torch.no_grad():
             val_loss = []
             for img, label in val_loader:
-                y_pred = model(img.to(device))
+                img = img.to(device)
+                label = label.to(device)
+
+                y_pred = model(img)
                 loss = loss_fn(y_pred, label)
                 val_loss.append(loss.item())
 
