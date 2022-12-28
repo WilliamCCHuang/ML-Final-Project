@@ -144,6 +144,7 @@ def train_byol(encoder, opt, device):
         t_epoch.set_postfix({'val loss': f'{val_loss:.4f}'})
 
         if val_loss < best_loss:
+            best_loss = val_loss
             learner.save(dir_path=opt.output_dir)
             print('save model!')
 
