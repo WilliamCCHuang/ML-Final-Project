@@ -67,7 +67,7 @@ class SimCLR(nn.Module):
 
         similarity = torch.matmul(z1, z2.T) / self.temperature  # (bz, bz)
         numerator = torch.diag(similarity)  # (bz,)
-        denominator = torch.logcumsumexp(dim=0) + torch.logcumsumexp(dim=1)  # (bz,)
+        denominator = torch.logcumsumexp(similarity, dim=0) + torch.logcumsumexp(similarity, dim=1)  # (bz,)
 
         # similarity = similarity.exp()
         # exp_pos_similarity = pos_similarity.exp()
