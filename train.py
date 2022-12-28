@@ -69,6 +69,7 @@ def save_opt(opt):
 def main():
     opt = parse_opt()
     check_opt(opt)
+    save_opt(opt)
     seed_everything(opt.seed)
     
     device = torch.device(f'cuda:{opt.gpu_idx}' if torch.cuda.is_available() else 'cpu')
