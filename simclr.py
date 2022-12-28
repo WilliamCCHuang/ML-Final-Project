@@ -54,7 +54,7 @@ class SimCLR(nn.Module):
         self.temperature = temperature
 
         self.encoder = encoder
-        self.projector = MLP(feature_dim, project_dim, project_dim)
+        self.projector = MLP(feature_dim, project_dim, project_dim).to(self.device)
 
     def _compute_loss(self, x1, x2):
         h1 = self.encoder(x1)
