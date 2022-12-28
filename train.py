@@ -62,8 +62,13 @@ def check_opt(opt):
 def save_opt(opt):
     opt_path = str(opt.output_dir / 'config.json')
 
+    opt_json = vars(opt)
+    for k, v in opt_json.items():
+        if not isinstance(v, int, float, str, dict):
+            opt_json[k] = dict(v)
+
     with open(str(opt_path), 'w') as f:
-        f.write(json.dumps(vars(opt), indent=4))
+        f.write(json.dumps(opt_json, indent=4))
 
 
 def main():
