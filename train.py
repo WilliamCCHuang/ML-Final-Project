@@ -7,6 +7,7 @@ from pathlib import Path
 from pprint import pprint
 
 import torch
+import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -40,6 +41,11 @@ def parse_opt():
 
 def check_opt(opt):
     opt.training_scheme in ['supervised', 'simclr', 'byol']
+    if opt.training_scheme in ['supervised']:
+        opt.last_fc = True
+    elif opt.training_scheme in ['simclr', 'byol']:
+        opt.last_fc = False
+
     opt.num_layers in [50, 101, 152, 200]
     opt.wide_scale in [1, 2, 3, 4]
 
@@ -56,7 +62,7 @@ def check_opt(opt):
 
     print()
     print('Config:')
-    pprint(opt)
+    pprint(vars(opt))
     print()
 
 
@@ -95,8 +101,41 @@ def main():
     scheme_func(encoder, opt, device)
 
 
-def train_supervised(encoder, opt, device):
-    raise NotImplementedError  # TODO:
+def train_supervised(model, opt, device):
+    train_loader, val_loader = get_loaders(opt)
+    transform = get_transform(opt)
+    train_loader.dataset.transform = transform
+
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=opt.lr)
+
+    best_loss = np.inf
+    t_epoch = tqdm(range(opt.epochs), desc='Epochs')
+    for _ in t_epoch:
+        t_batch = tqdm(train_loader)
+        for img, label in t_batch:
+            y_pred = model(img.to(device))
+            loss = loss_fn(y_pred, label)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
+
+        with torch.no_grad():
+            val_loss = []
+            for img, label in val_loader:
+                y_pred = model(img.to(device))
+                loss = loss_fn(y_pred, label)
+                val_loss.append(loss.item())
+
+        val_loss = np.mean(val_loss)
+        t_epoch.set_postfix({'val loss': f'{val_loss:.4f}'})
+
+        if val_loss < best_loss:
+            best_loss = val_loss
+            torch.save(model.state_dict(), str(opt.output_dir))
+            print('save model!')
 
 
 def train_simclr(loader, encoder, opt, device):

@@ -8,11 +8,12 @@ from torchvision.transforms import PILToTensor
 
 class ImagenetteDataset(Dataset):
 
-    def __init__(self, dir_path, img_size):
+    def __init__(self, dir_path, img_size, transform=None):
         super().__init__()
 
         self.dir_path = Path(dir_path)
         self.img_size = img_size, img_size
+        self.transform = transform
 
         if not self.dir_path.exists():
             raise FileNotFoundError(f'Can not find {str(self.dir_path)}')
@@ -45,6 +46,9 @@ class ImagenetteDataset(Dataset):
         img_path, class_idx = self.img_infos[idx]
         img = Image.open(str(img_path)).resize((160, 160))
         img = PILToTensor()(img).float()  # (3, 160, 160)
+
+        if self.transform is not None:
+            img = self.transform(img)
 
         if img.shape[0] == 1:
             img = torch.cat((img, img, img), dim=0)
