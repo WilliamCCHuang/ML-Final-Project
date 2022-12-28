@@ -12,6 +12,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from byol import BYOL
+from simclr import SimCLR
 from datasets import ImagenetteDataset
 from resnet import get_resnet
 from utils import seed_everything, get_feature_dim, get_transform, compute_total_training_steps
@@ -112,7 +113,7 @@ def train_supervised(model, opt, device):
     best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for _ in t_epoch:
-        t_batch = tqdm(train_loader)
+        t_batch = tqdm(train_loader, desc='Batches')
         for img, label in t_batch:
             img = img.to(device)
             label = label.to(device)
@@ -142,7 +143,7 @@ def train_supervised(model, opt, device):
 
         val_loss = np.mean(val_loss)
         val_acc = val_acc.item() / len(val_loader.dataset)
-        t_epoch.set_postfix({'val loss': f'{val_loss:.4f}'})
+        t_epoch.set_postfix({'val loss': f'{val_loss:.4f}', 'val acc': f'{val_acc:.4f}'})
 
         if val_acc > best_acc:
             best_acc = val_acc
@@ -150,8 +151,15 @@ def train_supervised(model, opt, device):
             print(f'save model as val acc = {val_acc:.4f}')
 
 
-def train_simclr(loader, encoder, opt, device):
-    raise NotImplementedError  # TODO:
+def train_simclr(encoder, opt, device):
+    train_loader, val_loader = get_loaders(opt)
+    transform = get_transform(opt)
+
+    learner = SimCLR(
+        encoder=encoder,
+        transform_1=transform,
+        transform_2=transform,
+    )
 
 
 def train_byol(encoder, opt, device):
@@ -162,8 +170,8 @@ def train_byol(encoder, opt, device):
     learner = BYOL(
         encoder=encoder,
         feature_dim=opt.feature_dim,
-        augment_func1=transform,
-        augment_func2=transform,
+        transform_1=transform,
+        transform_2=transform,
         tau_base=opt.tau_base,
         total_training_steps=total_training_steps,
     )
@@ -173,7 +181,7 @@ def train_byol(encoder, opt, device):
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
-        t_batch = tqdm(train_loader)
+        t_batch = tqdm(train_loader, desc='Batches')
         for i, (img, _) in enumerate(t_batch):
             current_training_steps = epoch * len(train_loader) + i
 

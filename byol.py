@@ -37,18 +37,18 @@ class BYOL(nn.Module):
         feature_dim=2048,
         projection_dim=256,
         projection_hidden_dim=4096,
-        augment_func1=None,
-        augment_func2=None,
+        transform_1=None,
+        transform_2=None,
         tau_base=0.996,
         total_training_steps=None
     ):
         super().__init__()
 
-        if augment_func1 is None:
-            raise ValueError('Must assign `augment_func1`')
+        if transform_1 is None:
+            raise ValueError('Must assign `transform_1`')
 
-        if augment_func2 is None:
-            raise ValueError('Must assign `augment_func2`')
+        if transform_2 is None:
+            raise ValueError('Must assign `transform_2`')
 
         if total_training_steps is None:
             raise ValueError('Must assign `total_training_steps`')
@@ -58,8 +58,8 @@ class BYOL(nn.Module):
         self.feature_dim = feature_dim
         self.projection_dim = projection_dim
         self.projection_hidden_dim = projection_hidden_dim
-        self.augment_func1 = augment_func1
-        self.augment_func2 = augment_func2
+        self.transform_1 = transform_1
+        self.transform_2 = transform_2
         self.tau_base = tau_base
         self.total_training_steps = total_training_steps
 
@@ -108,8 +108,8 @@ class BYOL(nn.Module):
         return loss
 
     def forward(self, x):
-        x1 = self.augment_func1(x)
-        x2 = self.augment_func2(x)
+        x1 = self.transform_1(x)
+        x2 = self.transform_2(x)
 
         x1 = x1.to(self.device)
         x2 = x2.to(self.device)
@@ -137,8 +137,8 @@ class BYOL(nn.Module):
 
             target_param.data = tau * old_weight + (1 - tau) * new_weight
 
-    def get_representation(self, img):
-        return self.online_encoder(img)
+    def get_representation(self, x):
+        return self.online_encoder(x)
 
     def save(self, dir_path):
         cpu_device = torch.device('cpu')
