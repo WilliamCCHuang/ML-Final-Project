@@ -119,6 +119,7 @@ def linear_eval(encoder, opt, device):
     for param in encoder.parameters():
         param.requires_grad = False
     
+    encoder.eval()
     classifier = nn.Linear(opt.feature_dim, opt.num_classes).to(device)
 
     loss_fn = nn.CrossEntropyLoss()
