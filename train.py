@@ -193,6 +193,7 @@ def train_simclr(encoder, opt, device):
             learner.save(dir_path=opt.output_dir)
             print(f'save model as val loss = {val_loss:.4f}')
 
+
 def train_byol(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
     transform = get_transform(opt)

@@ -68,16 +68,11 @@ class SimCLR(nn.Module):
         z2 = F.normalize(z2, p=2, dim=1)  # (bz, project_dim)
 
         similarity = torch.matmul(z1, z2.T) / self.temperature  # (bz, bz)
+        assert list(similarity.shape) == [bz, bz]
 
-        breakpoint()
         exp_similarity = similarity.exp()
         pos_similarity = torch.diag(similarity)  # (bz,)
         neg_similarity = exp_similarity.sum(dim=0) + exp_similarity.sum(dim=1) - 2 * pos_similarity.exp()  # (bz,)
-
-        # similarity = similarity.exp()
-        # exp_pos_similarity = pos_similarity.exp()
-        # neg_col_similarity = similarity.sum(dim=0) - exp_pos_similarity
-        # neg_row_similarity = similarity.sum(dim=1) - exp_pos_similarity
 
         assert len(pos_similarity) == bz
         assert len(neg_similarity) == bz

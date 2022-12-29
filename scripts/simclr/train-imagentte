@@ -5,6 +5,6 @@ python train.py \
     --num-layers 18 \
     --epochs 100 \
     --batch-size 64 \
-    --lr-base 0.02 \
+    --lr 0.004 \
     --output-dir exps/simclr/resnet18 \
     --gpu-idx 1
