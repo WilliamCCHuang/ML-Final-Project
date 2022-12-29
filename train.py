@@ -194,46 +194,42 @@ def train_simclr(encoder, opt, device):
 
 def train_byol(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
-    train_transform, val_transform = get_transform(opt)
     total_training_steps = compute_total_training_steps(train_loader, opt)
 
     learner = BYOL(
         encoder=encoder,
         feature_dim=opt.feature_dim,
-        transform_1=train_transform,
-        transform_2=train_transform,
         tau_base=opt.tau_base,
         total_training_steps=total_training_steps,
     )
 
     optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1)
+    # scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1)
 
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
         learner.train()
-        learner.transform_1 = learner.transform_2 = train_transform
-
         t_batch = tqdm(train_loader, desc='Batches', leave=False)
-        for i, (img, _) in enumerate(t_batch):
+        for i, (img_1, img_2, _) in enumerate(t_batch):
             current_training_steps = epoch * len(train_loader) + i
 
-            loss = learner(img.to(device))
+            img_1, img_2 = img_1.to(device), img_2.to(device)
+            loss = learner()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step(epoch + i / len(train_loader))
+            # scheduler.step(epoch + i / len(train_loader))
             learner.update_target_network(current_training_steps=current_training_steps)
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
         learner.eval()
-        learner.transform_1 = learner.transform_2 = val_transform
         val_loss = []
         with torch.no_grad():
-            for img, _ in val_loader:
-                loss = learner(img.to(device))
+            for img_1, img_2, _ in val_loader:
+                img_1, img_2 = img_1.to(device), img_2.to(device)
+                loss = learner(img_1, img_2)
                 val_loss.append(loss.item())
 
         val_loss = np.mean(val_loss)
@@ -246,8 +242,10 @@ def train_byol(encoder, opt, device):
 
 
 def get_loaders(opt):
-    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size)
-    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size)
+    train_transform, val_transform = get_transform(opt)
+
+    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size, transform_1=train_transform, transform_2=train_transform)
+    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size, transform_1=val_transform, transform_2=val_transform)
     
     train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)

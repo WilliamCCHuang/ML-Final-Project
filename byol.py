@@ -37,18 +37,10 @@ class BYOL(nn.Module):
         feature_dim=2048,
         projection_dim=256,
         projection_hidden_dim=4096,
-        transform_1=None,
-        transform_2=None,
         tau_base=0.996,
         total_training_steps=None
     ):
         super().__init__()
-
-        if transform_1 is None:
-            raise ValueError('Must assign `transform_1`')
-
-        if transform_2 is None:
-            raise ValueError('Must assign `transform_2`')
 
         if total_training_steps is None:
             raise ValueError('Must assign `total_training_steps`')
@@ -58,8 +50,6 @@ class BYOL(nn.Module):
         self.feature_dim = feature_dim
         self.projection_dim = projection_dim
         self.projection_hidden_dim = projection_hidden_dim
-        self.transform_1 = transform_1
-        self.transform_2 = transform_2
         self.tau_base = tau_base
         self.total_training_steps = total_training_steps
 
@@ -107,10 +97,7 @@ class BYOL(nn.Module):
         
         return loss
 
-    def forward(self, x):
-        x1 = self.transform_1(x)
-        x2 = self.transform_2(x)
-
+    def forward(self, x1, x2):
         x1 = x1.to(self.device)
         x2 = x2.to(self.device)
 
