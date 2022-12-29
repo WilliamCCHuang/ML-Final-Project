@@ -148,8 +148,8 @@ def create_loaders_from_tensors(X_train, y_train, X_val, y_val, opt):
 
 def linear_eval(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
-    transform = get_transform(opt)
-    train_loader.dataset.transform = transform
+    _, val_transform = get_transform(opt)
+    train_loader.dataset.transform = val_transform
     
     for param in encoder.parameters():
         param.requires_grad = False
