@@ -8,7 +8,7 @@ from torchvision.transforms import PILToTensor
 
 class ImagenetteDataset(Dataset):
 
-    def __init__(self, dir_path, img_size, transform_1=None, transform_2=None):
+    def __init__(self, dir_path, img_size, transform_1, transform_2):
         super().__init__()
 
         self.dir_path = Path(dir_path)
@@ -51,8 +51,9 @@ class ImagenetteDataset(Dataset):
         if img.shape[0] == 1:
             img = torch.cat((img, img, img), dim=0)
 
-        if self.transform_1 is not None:
-            img_1 = self.transform_1(img)
+        img_1 = self.transform_1(img)
+
+        img_2 = None
         if self.transform_2 is not None:
             img_2 = self.transform_2(img)
 

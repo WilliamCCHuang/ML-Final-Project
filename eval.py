@@ -117,7 +117,7 @@ def get_features(encoder, loader):
 
     feats, labels = [], []
     with torch.no_grad():
-        for img, label in loader:
+        for img, _, label in loader:
             img = img.to(device)
             feat = encoder(img)
             feat = feat.view(len(feat), -1)
@@ -148,9 +148,6 @@ def create_loaders_from_tensors(X_train, y_train, X_val, y_val, opt):
 
 def linear_eval(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
-    _, val_transform = get_transform(opt)
-    train_loader.dataset.transform = val_transform
-    val_loader.dataset.transform = val_transform
     
     for param in encoder.parameters():
         param.requires_grad = False
@@ -215,8 +212,10 @@ def linear_eval(encoder, opt, device):
 
 
 def get_loaders(opt):
-    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size)
-    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size)
+    _, val_transform = get_transform(opt)
+
+    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size, transform_1=val_transform, transform_2=val_transform)
+    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size, transform_1=val_transform, transform_2=val_transform)
     
     train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)
