@@ -98,9 +98,6 @@ class BYOL(nn.Module):
         return loss
 
     def forward(self, x1, x2):
-        x1 = x1.to(self.device)
-        x2 = x2.to(self.device)
-
         loss = self._compute_loss(x1, x2)
 
         return loss

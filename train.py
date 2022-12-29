@@ -227,9 +227,9 @@ def train_byol(encoder, opt, device):
         learner.eval()
         val_loss = []
         with torch.no_grad():
-            for img_1, img_2, _ in val_loader:
-                img_1, img_2 = img_1.to(device), img_2.to(device)
-                loss = learner(img_1, img_2)
+            for img, _, _ in val_loader:
+                img = img.to(device)
+                loss = learner(img, img)
                 val_loss.append(loss.item())
 
         val_loss = np.mean(val_loss)
@@ -245,7 +245,7 @@ def get_loaders(opt):
     train_transform, val_transform = get_transform(opt)
 
     train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size, transform_1=train_transform, transform_2=train_transform)
-    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size, transform_1=val_transform, transform_2=val_transform)
+    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size, transform_1=val_transform, transform_2=None)
     
     train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)
