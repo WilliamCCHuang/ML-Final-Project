@@ -230,7 +230,6 @@ def train_byol(encoder, opt, device):
             for img, _, _ in val_loader:
                 img = img.to(device)
                 loss = learner(img, img)
-                breakpoint()
                 val_loss.append(loss.item())
 
         val_loss = np.mean(val_loss)
