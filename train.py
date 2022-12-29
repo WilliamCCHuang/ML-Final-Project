@@ -29,6 +29,7 @@ def parse_opt():
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--batch-size', type=int, default=256)  # 4096 in paper
     parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--weight-decay', type=float, default=0)
     parser.add_argument('--tau-base', type=float, default=0.996)
     parser.add_argument('--temperature', type=float, default=0.5)
 
@@ -106,7 +107,7 @@ def train_supervised(model, opt, device):
     train_loader.dataset.transform = transform
 
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=opt.lr)
+    optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
 
     best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
@@ -161,7 +162,7 @@ def train_simclr(encoder, opt, device):
         temperature=opt.temperature
     )
 
-    optimizer = optim.Adam(learner.parameters(), lr=opt.lr)
+    optimizer = optim.Adam(learner.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
 
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
@@ -205,7 +206,7 @@ def train_byol(encoder, opt, device):
         total_training_steps=total_training_steps,
     )
 
-    optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr)
+    optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
 
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')

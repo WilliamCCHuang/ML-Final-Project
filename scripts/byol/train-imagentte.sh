@@ -5,7 +5,7 @@ python train.py \
     --num-layers 18 \
     --epochs 100 \
     --batch-size 64 \
-    --lr-base 0.001 \
+    --lr 0.001 \
     --weight-decay 1.5e-6 \
     --output-dir exps/byol/resnet18 \
     --gpu-idx 0
