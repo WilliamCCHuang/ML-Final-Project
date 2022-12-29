@@ -123,7 +123,7 @@ def get_features(encoder, loader):
             feat = feat.view(len(feat), -1)
 
             feats.append(feat.cpu().detach())
-            labels.append(label.numpy())
+            labels.append(label)
 
     feats = torch.cat(feats, dim=0)
     labels = torch.cat(labels, dim=0)
