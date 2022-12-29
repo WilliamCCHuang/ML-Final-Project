@@ -168,17 +168,13 @@ def linear_eval(encoder, opt, device):
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for _ in t_epoch:
         t_batch = tqdm(train_loader, desc='Batches')
-        for img, label in t_batch:
-            bz = img.shape[0]
+        for feat, label in t_batch:
+            bz = feat.shape[0]
 
-            img = img.to(device)
+            feat = feat.to(device)
             label = label.to(device)
 
-            with torch.no_grad():
-                z = encoder(img)
-                z = z.view(bz, -1)
-
-            y_prob = classifier(z)
+            y_prob = classifier(feat)
             loss = loss_fn(y_prob, label)
 
             optimizer.zero_grad()
@@ -190,15 +186,13 @@ def linear_eval(encoder, opt, device):
         with torch.no_grad():
             val_acc = 0
             val_loss = []
-            for img, label in val_loader:
-                bz = img.shape[0]
+            for feat, label in val_loader:
+                feat = feat.shape[0]
 
-                img = img.to(device)
+                feat = feat.to(device)
                 label = label.to(device)
-
-                z = encoder(img)
-                z = z.view(bz, -1)
-                y_prob = classifier(z)
+                
+                y_prob = classifier(feat)
                 loss = loss_fn(y_prob, label)
                 val_loss.append(loss.item())
 
