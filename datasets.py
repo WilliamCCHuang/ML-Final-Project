@@ -51,11 +51,8 @@ class ImagenetteDataset(Dataset):
         if img.shape[0] == 1:
             img = torch.cat((img, img, img), dim=0)
 
-        img_1 = img
-        img_2 = None
-
         if self.transform_1 is not None:
-            img_1 = self.transform_1(img_1)
+            img_1 = self.transform_1(img)
         if self.transform_2 is not None:
             img_2 = self.transform_2(img)
 
