@@ -6,10 +6,6 @@ import torch
 from torchvision.transforms import transforms
 
 
-def check_opt(opt):
-    raise NotImplementedError
-
-
 def seed_everything(seed):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)

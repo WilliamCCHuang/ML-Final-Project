@@ -4,8 +4,8 @@ python train.py \
     --training-scheme byol \
     --num-layers 18 \
     --epochs 100 \
-    --batch-size 64 \
+    --batch-size 128 \
     --lr 0.001 \
-    --weight-decay 1.5e-6 \
+    --weight-decay 1e-4 \
     --output-dir exps/byol/resnet18 \
     --gpu-idx 0
