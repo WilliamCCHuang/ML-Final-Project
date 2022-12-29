@@ -194,6 +194,7 @@ def train_simclr(encoder, opt, device):
 
 def train_byol(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
+    breakpoint()
     total_training_steps = compute_total_training_steps(train_loader, opt)
 
     learner = BYOL(
