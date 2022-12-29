@@ -5,6 +5,7 @@ python train.py \
     --num-layers 18 \
     --epochs 1000 \
     --batch-size 64 \
-    --lr-base 0.004 \
+    --lr 0.001 \
+    --weight-decay 1e-6 \
     --output-dir exps/supervised/resnet18 \
     --gpu-idx 0

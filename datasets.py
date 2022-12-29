@@ -58,4 +58,4 @@ class ImagenetteDataset(Dataset):
         if self.transform_2 is not None:
             img_2 = self.transform_2(img)
 
-        return img, img_1, img_2, class_idx
+        return img_1, img_2, class_idx
