@@ -99,7 +99,6 @@ def main():
     else:
         scheme_func = train_byol
 
-    opt.augment_funcs = get_transform(opt)
     scheme_func(encoder, opt, device)
 
 
