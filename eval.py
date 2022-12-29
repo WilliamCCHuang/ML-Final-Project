@@ -157,7 +157,7 @@ def linear_eval(encoder, opt, device):
     encoder.eval()
     X_train, y_train = get_features(encoder, train_loader)
     X_val, y_val = get_features(encoder, val_loader)
-    train_loader, val_loader = create_loaders_from_tensors(X_train, y_train, X_val, y_val)
+    train_loader, val_loader = create_loaders_from_tensors(X_train, y_train, X_val, y_val, opt)
 
     classifier = nn.Linear(opt.feature_dim, opt.num_classes).to(device)
 
