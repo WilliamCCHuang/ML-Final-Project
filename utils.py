@@ -39,7 +39,7 @@ def get_transform(opt):
         transforms.RandomHorizontalFlip(),
         transforms.RandomApply([color_jitter], p=0.8),
         transforms.RandomGrayscale(p=0.2),
-        transforms.RandomApply([transforms.GaussianBlur(kernel_size=5)], p=0.5),
+        transforms.RandomApply([transforms.GaussianBlur(kernel_size=3)], p=0.5),
         # transforms.RandomApply([Solarize()], p=solarize_prob),
         # transforms.ToTensor(),
         normalize
