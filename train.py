@@ -215,7 +215,7 @@ def train_byol(encoder, opt, device):
             current_training_steps = epoch * len(train_loader) + i
 
             img_1, img_2 = img_1.to(device), img_2.to(device)
-            loss = learner()
+            loss = learner(img_1, img_2)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
