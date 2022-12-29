@@ -119,7 +119,7 @@ def linear_eval(encoder, opt, device):
     for param in encoder.parameters():
         param.requires_grad = False
     
-    classifier = nn.Linear(opt.feature_dim, opt.num_classes)
+    classifier = nn.Linear(opt.feature_dim, opt.num_classes).to(device)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(classifier.parameters(), lr=opt.lr)
@@ -175,10 +175,12 @@ def linear_eval(encoder, opt, device):
             checkpoint = {
                 'feature_dim': opt.feature_dim,
                 'num_classes': opt.num_classes,
-                'classifier': classifier.state_dict()
+                'classifier': classifier.to(torch.device('cpu')).state_dict()
             }
             torch.save(checkpoint, str(opt.output_dir / 'linear.pt'))
             print(f'save model as val acc = {val_acc:.4f}')
+
+            classifier.to(device)
 
 
 def get_loaders(opt):
