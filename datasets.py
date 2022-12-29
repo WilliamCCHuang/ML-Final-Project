@@ -53,7 +53,7 @@ class ImagenetteDataset(Dataset):
 
         img_1 = self.transform_1(img)
 
-        img_2 = 0
+        img_2 = img
         if self.transform_2 is not None:
             img_2 = self.transform_2(img)
 
