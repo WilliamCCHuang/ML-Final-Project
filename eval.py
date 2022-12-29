@@ -100,7 +100,7 @@ def load_encoder(opt, device):
     if 'encoder' in checkpoint:
         encoder_state_dict = checkpoint['encoder']
     elif 'online_encoder' in checkpoint:
-        encoder_state_dict = checkpoint['encoder']
+        encoder_state_dict = checkpoint['online_encoder']
 
     encoder.load_state_dict(encoder_state_dict).to(device)
 
