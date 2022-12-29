@@ -30,7 +30,7 @@ def get_transform(opt):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
-    transform = [
+    train_transform = transforms.Compose([
         transforms.RandomResizedCrop(opt.img_size),
         transforms.RandomHorizontalFlip(),
         transforms.RandomApply([color_jitter], p=0.8),
@@ -39,9 +39,14 @@ def get_transform(opt):
         # transforms.RandomApply([Solarize()], p=solarize_prob),
         # transforms.ToTensor(),
         normalize
-    ]
+    ])
+
+    test_transform = transforms.Compose([
+        transforms.CenterCrop(opt.img_size),
+        normalize
+    ])
     
-    return transforms.Compose(transform)
+    return train_transform, test_transform
 
 
 def compute_total_training_steps(loader, opt):

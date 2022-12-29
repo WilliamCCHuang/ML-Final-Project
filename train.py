@@ -194,14 +194,14 @@ def train_simclr(encoder, opt, device):
 
 def train_byol(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
-    transform = get_transform(opt)
+    train_transform, val_transform = get_transform(opt)
     total_training_steps = compute_total_training_steps(train_loader, opt)
 
     learner = BYOL(
         encoder=encoder,
         feature_dim=opt.feature_dim,
-        transform_1=transform,
-        transform_2=transform,
+        transform_1=train_transform,
+        transform_2=train_transform,
         tau_base=opt.tau_base,
         total_training_steps=total_training_steps,
     )
@@ -213,6 +213,8 @@ def train_byol(encoder, opt, device):
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
         learner.train()
+        learner.transform_1 = learner.transform_2 = train_transform
+
         t_batch = tqdm(train_loader, desc='Batches', leave=False)
         for i, (img, _) in enumerate(t_batch):
             current_training_steps = epoch * len(train_loader) + i
@@ -226,8 +228,9 @@ def train_byol(encoder, opt, device):
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
-        val_loss = []
         learner.eval()
+        learner.transform_1 = learner.transform_2 = val_transform
+        val_loss = []
         with torch.no_grad():
             for img, _ in val_loader:
                 loss = learner(img.to(device))
