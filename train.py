@@ -113,7 +113,7 @@ def train_supervised(model, opt, device):
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for _ in t_epoch:
         t_batch = tqdm(train_loader, desc='Batches')
-        for img, label in t_batch:
+        for img, _, label in t_batch:
             img = img.to(device)
             label = label.to(device)
 
@@ -129,7 +129,7 @@ def train_supervised(model, opt, device):
         with torch.no_grad():
             val_acc = 0
             val_loss = []
-            for img, label in val_loader:
+            for img, _, label in val_loader:
                 img = img.to(device)
                 label = label.to(device)
 
@@ -230,6 +230,7 @@ def train_byol(encoder, opt, device):
             for img, _, _ in val_loader:
                 img = img.to(device)
                 loss = learner(img, img)
+                breakpoint()
                 val_loss.append(loss.item())
 
         val_loss = np.mean(val_loss)
