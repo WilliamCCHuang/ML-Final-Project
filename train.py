@@ -103,8 +103,8 @@ def main():
 
 def train_supervised(model, opt, device):
     train_loader, val_loader = get_loaders(opt)
-    transform = get_transform(opt)
-    train_loader.dataset.transform = transform
+    train_loader.dataset.transform_2 = None
+    val_loader.dataset.transform_2 = None
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
