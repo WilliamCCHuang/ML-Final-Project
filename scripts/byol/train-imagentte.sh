@@ -6,6 +6,6 @@ python train.py \
     --epochs 100 \
     --batch-size 128 \
     --lr 0.001 \
-    --weight-decay 1e-4 \
+    --weight-decay 1e-6 \
     --output-dir exps/byol/resnet18 \
     --gpu-idx 0
