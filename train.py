@@ -28,7 +28,7 @@ def parse_opt():
     parser.add_argument('--wide-scale', type=int, default=1)
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--batch-size', type=int, default=256)  # 4096 in paper
-    parser.add_argument('--lr-base', type=float, default=0.2)
+    parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--tau-base', type=float, default=0.996)
     parser.add_argument('--temperature', type=float, default=0.5)
 
@@ -48,13 +48,11 @@ def check_opt(opt):
     elif opt.training_scheme in ['simclr', 'byol']:
         opt.last_fc = False
 
-    opt.num_layers in [50, 101, 152, 200]
-    opt.wide_scale in [1, 2, 3, 4]
+    assert opt.num_layers in [18, 50, 101, 152, 200]
+    assert opt.wide_scale in [1, 2, 3, 4]
 
     if 'imagenette' in opt.img_dir:
         opt.num_classes = 10
-
-    opt.lr = opt.lr_base * opt.batch_size / 256
 
     if opt.output_dir is None:
         raise RuntimeError('The argument `output-dir` must be assign')
@@ -212,7 +210,8 @@ def train_byol(encoder, opt, device):
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
-        t_batch = tqdm(train_loader, desc='Batches')
+        learner.train()
+        t_batch = tqdm(train_loader, desc='Batches', leave=False)
         for i, (img, _) in enumerate(t_batch):
             current_training_steps = epoch * len(train_loader) + i
 
@@ -224,8 +223,9 @@ def train_byol(encoder, opt, device):
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
+        val_loss = []
+        learner.eval()
         with torch.no_grad():
-            val_loss = []
             for img, _ in val_loader:
                 loss = learner(img.to(device))
                 val_loss.append(loss.item())

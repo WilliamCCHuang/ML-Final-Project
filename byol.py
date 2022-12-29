@@ -122,6 +122,7 @@ class BYOL(nn.Module):
         assert current_training_steps <= self.total_training_steps
         return 1 - (1 - self.tau_base) * (math.cos(math.pi * current_training_steps / self.total_training_steps) + 1) / 2
 
+    @torch.no_grad()
     def update_target_network(self, current_training_steps):
         tau = self._compute_tau(current_training_steps)
 
