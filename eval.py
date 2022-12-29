@@ -48,6 +48,7 @@ def check_opt(opt):
 
     if 'imagenette' in opt.img_dir:
         opt.num_classes = 10
+    opt.last_fc = False
 
     if opt.output_dir is None:
         raise RuntimeError('The argument `output-dir` must be assign')
