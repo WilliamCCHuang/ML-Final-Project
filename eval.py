@@ -167,7 +167,7 @@ def linear_eval(encoder, opt, device):
     best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for _ in t_epoch:
-        t_batch = tqdm(train_loader, desc='Batches')
+        t_batch = tqdm(train_loader, desc='Batches', leave=False)
         for feat, label in t_batch:
             feat = feat.to(device)
             label = label.to(device)
