@@ -150,6 +150,7 @@ def linear_eval(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
     _, val_transform = get_transform(opt)
     train_loader.dataset.transform = val_transform
+    val_loader.dataset.transform = val_transform
     
     for param in encoder.parameters():
         param.requires_grad = False
