@@ -169,8 +169,6 @@ def linear_eval(encoder, opt, device):
     for _ in t_epoch:
         t_batch = tqdm(train_loader, desc='Batches')
         for feat, label in t_batch:
-            bz = feat.shape[0]
-
             feat = feat.to(device)
             label = label.to(device)
 
@@ -187,8 +185,6 @@ def linear_eval(encoder, opt, device):
             val_acc = 0
             val_loss = []
             for feat, label in val_loader:
-                feat = feat.shape[0]
-
                 feat = feat.to(device)
                 label = label.to(device)
                 
