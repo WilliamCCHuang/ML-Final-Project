@@ -7,4 +7,4 @@ python train.py \
     --batch-size 64 \
     --lr-base 0.02 \
     --output-dir exps/byol/resnet18 \
-    --gpu-idx 0
+    --gpu-idx 1

@@ -5,5 +5,6 @@ python eval.py \
     --evaluation-scheme linear \
     --num-layers 18 \
     --epochs 100 \
+    --batch-size 64 \
     --output-dir exps/byol/linear \
-    --gpu-idx 3
+    --gpu-idx 2
