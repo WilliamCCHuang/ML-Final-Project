@@ -102,8 +102,11 @@ def load_encoder(opt, device):
     elif 'online_encoder' in checkpoint:
         encoder_state_dict = checkpoint['online_encoder']
 
-    breakpoint()
-    encoder.load_state_dict(encoder_state_dict).to(device)
+    if 'fc.weight' in encoder_state_dict:
+        del encoder_state_dict['fc.weight']
+        del encoder_state_dict['fc.bias']
+    encoder.load_state_dict(encoder_state_dict)
+    encoder.to(device)
 
     return encoder
 
