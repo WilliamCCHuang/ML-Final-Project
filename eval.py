@@ -9,7 +9,7 @@ from pprint import pprint
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import TensorDataset, DataLoader
 
 from byol import BYOL
 from simclr import SimCLR
@@ -111,6 +111,41 @@ def load_encoder(opt, device):
     return encoder
 
 
+def get_features(encoder, loader):
+    encoder.eval()
+    device = next(encoder.parameters()).device
+
+    feats, labels = [], []
+    with torch.no_grad():
+        for img, label in loader:
+            img = img.to(device)
+            feat = encoder(img)
+            feat = feat.view(len(feat), -1)
+
+            feats.append(feat.cpu().detach())
+            labels.append(label.numpy())
+
+    feats = torch.cat(feats, dim=0)
+    labels = torch.cat(labels, dim=0)
+
+    assert feats.ndim == 2
+    assert len(feats) == len(loader.dataset)
+    assert labels.ndim == 1
+    assert len(labels) == len(loader.dataset)
+
+    return feats, labels
+
+
+def create_loaders_from_tensors(X_train, y_train, X_val, y_val, opt):
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
+
+    val_dataset = TensorDataset(X_val, y_val)
+    val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)
+
+    return train_loader, val_loader
+
+
 def linear_eval(encoder, opt, device):
     train_loader, val_loader = get_loaders(opt)
     transform = get_transform(opt)
@@ -120,6 +155,10 @@ def linear_eval(encoder, opt, device):
         param.requires_grad = False
     
     encoder.eval()
+    X_train, y_train = get_features(encoder, train_loader)
+    X_val, y_val = get_features(encoder, val_loader)
+    train_loader, val_loader = create_loaders_from_tensors(X_train, y_train, X_val, y_val)
+
     classifier = nn.Linear(opt.feature_dim, opt.num_classes).to(device)
 
     loss_fn = nn.CrossEntropyLoss()
