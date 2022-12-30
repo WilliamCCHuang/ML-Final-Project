@@ -18,6 +18,8 @@
 
 ## Run Experiments
 
+> Ensure that the required packages are installed.
+
 * Supervised leanring
 
     ```
