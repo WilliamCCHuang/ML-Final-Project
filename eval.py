@@ -161,12 +161,14 @@ def linear_eval(encoder, opt, device):
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(classifier.parameters(), lr=opt.lr)
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1)
 
     best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
-    for _ in t_epoch:
+    for epoch in t_epoch:
+        classifier.train()
         t_batch = tqdm(train_loader, desc='Batches', leave=False)
-        for feat, label in t_batch:
+        for i, (feat, label) in enumerate(t_batch):
             feat = feat.to(device)
             label = label.to(device)
 
@@ -176,9 +178,11 @@ def linear_eval(encoder, opt, device):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step(epoch + i / len(train_loader))
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
+        classifier.eval()
         with torch.no_grad():
             val_acc = 0
             val_loss = []
@@ -214,8 +218,8 @@ def linear_eval(encoder, opt, device):
 def get_loaders(opt):
     _, val_transform = get_transform(opt)
 
-    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size, transform_1=val_transform, transform_2=val_transform)
-    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size, transform_1=val_transform, transform_2=val_transform)
+    train_dataset = ImagenetteDataset(Path(opt.img_dir) / 'train', opt.img_size, transform_1=val_transform, transform_2=None)
+    val_dataset = ImagenetteDataset(Path(opt.img_dir) / 'val', opt.img_size, transform_1=val_transform, transform_2=None)
     
     train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)
