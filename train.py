@@ -108,12 +108,13 @@ def train_supervised(model, opt, device):
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1)
 
     best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
-    for _ in t_epoch:
+    for epoch in t_epoch:
         t_batch = tqdm(train_loader, desc='Batches')
-        for img, _, label in t_batch:
+        for i, (img, _, label) in zip(t_batch):
             img = img.to(device)
             label = label.to(device)
 
@@ -123,6 +124,7 @@ def train_supervised(model, opt, device):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step(epoch + i / len(train_loader))
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
@@ -204,6 +206,7 @@ def train_byol(encoder, opt, device):
     )
 
     optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1)
 
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
@@ -218,6 +221,7 @@ def train_byol(encoder, opt, device):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step(epoch + i / len(train_loader))
             learner.update_target_network(current_training_steps=current_training_steps)
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
