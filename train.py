@@ -119,11 +119,11 @@ def train_supervised(model, opt, device):
             img = img.to(device)
             label = label.to(device)
 
+            if torch.isnan(img).any():
+                breakpoint()
+
             y_prob = model(img)
             loss = loss_fn(y_prob, label)
-
-            if torch.isnan(loss):
-                breakpoint()
 
             optimizer.zero_grad()
             loss.backward()
