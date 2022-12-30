@@ -7,6 +7,5 @@ python eval.py \
     --epochs 100 \
     --batch-size 64 \
     --lr 0.001 \
-    --weight-decay 1e-6 \
     --output-dir exps/byol/resnet50 \
     --gpu-idx 3
