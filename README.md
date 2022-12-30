@@ -6,10 +6,9 @@
 
     [ImageNette](https://github.com/fastai/imagenette) is a subset of 10 easily classified classes from Imagenet. It contains 9,469 training images.
 
-    Run the following command to download imagenette160
+    Run the following commands to download imagenette160
     
     ```
-    $ git clone https://github.com/WilliamCCHuang/ML-Final-Project.git
     $ cd ML-Final-Project/data
     $ wget https://s3.amazonaws.com/fast-ai-imageclas/imagenette2-160.tgz
     $ tar zxvf imagenette2-160.tgz
@@ -28,7 +27,9 @@
 
     `{MODEL}` should be replaced as one of `resnet18` or `resnet50`.
 
-    The accuracy will be printed.
+    The model weight will be saved in the directory `exps/supervised/{MODEL}/model.pt`.
+    
+    The top-1 accuracy will be printed.
 
 * BYOL
 
@@ -41,6 +42,8 @@
 
         `{MODEL}` should be replaced as one of `resnet18` or `resnet50`.
 
+        The model weight will be saved in the directory `exps/byol/{MODEL}/byol_leaner.pt`.
+
     * Linear Evaluation
 
         ```
@@ -49,6 +52,8 @@
         ```
 
         `{MODEL}` should be replaced as one of `resnet18` or `resnet50`.
+
+        The top-1 accuracy will be printed.
 
 ## Explanations
 
