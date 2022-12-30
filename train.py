@@ -204,7 +204,6 @@ def train_byol(encoder, opt, device):
     )
 
     optimizer = optim.Adam(learner.trainable_parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-    # scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1)
 
     best_loss = np.inf
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
@@ -219,7 +218,6 @@ def train_byol(encoder, opt, device):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            # scheduler.step(epoch + i / len(train_loader))
             learner.update_target_network(current_training_steps=current_training_steps)
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
