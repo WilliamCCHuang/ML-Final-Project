@@ -64,3 +64,7 @@
     In the method `self._compute_loss()`, the online network that consists of an encoder, a projector, and a predictor, is inputted with `x1` , and outputs the prediction $q_\theta(z_\theta)$, while `x2` is projected into the target $z'_\xi$ by the target network that only has an encoder and a projector. The class [BYOLLoss](https://github.com/WilliamCCHuang/ML-Final-Project/blob/main/losses.py#L5) uses the prediction $q_\theta(z_\theta)$ and the target $z'_\xi$ to compute BYOL loss.
 
     The most important thing is that only the online network is updated by back propagation. The target network is updated with a slow-moving average of the online network. It is done by the method [`self.update_target_network()`](https://github.com/WilliamCCHuang/ML-Final-Project/blob/main/byol.py#L110). This method is called after the online network is updated.
+
+## Requirements
+
+See the file `requirements.txt`.
