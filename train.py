@@ -114,7 +114,7 @@ def train_supervised(model, opt, device):
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
         t_batch = tqdm(train_loader, desc='Batches')
-        for i, (img, _, label) in zip(t_batch):
+        for i, (img, _, label) in enumerate(t_batch):
             img = img.to(device)
             label = label.to(device)
 
