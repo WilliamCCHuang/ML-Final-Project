@@ -8,4 +8,4 @@ python train.py \
     --lr 0.001 \
     --weight-decay 1e-6 \
     --output-dir exps/supervised/resnet50 \
-    --gpu-idx 2
+    --gpu-idx 0

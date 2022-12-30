@@ -7,4 +7,4 @@ python train.py \
     --batch-size 64 \
     --lr 0.004 \
     --output-dir exps/simclr/resnet18 \
-    --gpu-idx 1
+    --gpu-idx 0

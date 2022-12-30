@@ -4,8 +4,8 @@ python eval.py \
     --checkpoint-path exps/byol/resnet18/byol_learner.pt \
     --evaluation-scheme linear \
     --num-layers 18 \
-    --epochs 100 \
+    --epochs 200 \
     --batch-size 64 \
     --lr 0.001 \
     --output-dir exps/byol/resnet18 \
-    --gpu-idx 1
+    --gpu-idx 0
