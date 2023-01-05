@@ -113,10 +113,14 @@ def train_supervised(model, opt, device):
     best_acc = 0
     t_epoch = tqdm(range(opt.epochs), desc='Epochs')
     for epoch in t_epoch:
+        model.train()
         t_batch = tqdm(train_loader, desc='Batches')
         for i, (img, _, label) in enumerate(t_batch):
             img = img.to(device)
             label = label.to(device)
+
+            if torch.isnan(img).any():
+                breakpoint()
 
             y_prob = model(img)
             loss = loss_fn(y_prob, label)
@@ -128,6 +132,7 @@ def train_supervised(model, opt, device):
 
             t_batch.set_postfix({'train loss': f'{loss.item():.4f}'})
 
+        model.eval()
         with torch.no_grad():
             val_acc = 0
             val_loss = []
